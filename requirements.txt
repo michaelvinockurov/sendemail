@@ -1,4 +1,1 @@
 streamlit
-email
-smtplib
-ssl
