@@ -3,33 +3,27 @@ from email.message import EmailMessage
 import ssl
 import streamlit as st
 
-import smtplib
-from email.message import EmailMessage
-import ssl
-
-def send_email(from_email, password, to_email, subject, body, attachment_file=None):
+def send_email(from_email, password, to_email, subject, body, attachment_file):
     msg = EmailMessage()
     msg['Subject'] = subject
     msg['From'] = from_email
     msg['To'] = to_email
     msg.set_content(body)
 
-    # Если есть вложение, добавляем его
-    if attachment_file:
-        file_data = attachment_file.read()
-        file_name = attachment_file.name
-        msg.add_attachment(file_data, maintype='application', subtype='octet-stream', filename=file_name)
+    file_data = attachment_file.read()
+    file_name = attachment_file.name
+    msg.add_attachment(file_data, maintype='application', subtype='pdf', filename=file_name)
 
-    # Используем SSL для отправки письма через SMTP сервер Яндекса
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.yandex.ru', 465, context=context) as server:
+    # Update the SMTP server to mail.ru
+    with smtplib.SMTP_SSL('smtp.mail.ru', 465, context=context) as server:
         server.login(from_email, password)
         server.send_message(msg)
 
 def main():
     st.title("Отправка ПЦР-результатов")
 
-    from_email = st.text_input("Введите ваш email (Яндекс)")
+    from_email = st.text_input("Введите ваш email (Mail.ru)")
     password = st.text_input("Введите ваш пароль", type="password")
     pdf_files = st.file_uploader("Выберите PDF файлы", type=["pdf"], accept_multiple_files=True)
     email_input = st.text_area("Введите email адреса (через ;)", "")
@@ -62,7 +56,6 @@ def main():
                     st.error(f"Не удалось отправить email на {email}.\nОшибка: {str(e)}")
         else:
             st.warning("Пожалуйста, введите email, пароль, загрузите PDF файлы и введите адреса.")
-
 
 if __name__ == "__main__":
     main()
