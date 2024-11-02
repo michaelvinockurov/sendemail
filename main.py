@@ -3,23 +3,28 @@ from email.message import EmailMessage
 import ssl
 import streamlit as st
 
+import smtplib
+from email.message import EmailMessage
+import ssl
 
-def send_email(from_email, password, to_email, subject, body, attachment_file):
+def send_email(from_email, password, to_email, subject, body, attachment_file=None):
     msg = EmailMessage()
     msg['Subject'] = subject
     msg['From'] = from_email
     msg['To'] = to_email
     msg.set_content(body)
 
-    file_data = attachment_file.read()
-    file_name = attachment_file.name
-    msg.add_attachment(file_data, maintype='application', subtype='pdf', filename=file_name)
+    # Если есть вложение, добавляем его
+    if attachment_file:
+        file_data = attachment_file.read()
+        file_name = attachment_file.name
+        msg.add_attachment(file_data, maintype='application', subtype='octet-stream', filename=file_name)
 
+    # Используем SSL для отправки письма через SMTP сервер Яндекса
     context = ssl.create_default_context()
-    with smtplib.SMTP_SSL('smtp.yandex.com', 465, context=context) as server:
+    with smtplib.SMTP_SSL('smtp.yandex.ru', 465, context=context) as server:
         server.login(from_email, password)
         server.send_message(msg)
-
 
 def main():
     st.title("Отправка ПЦР-результатов")
